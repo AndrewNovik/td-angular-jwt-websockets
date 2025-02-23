@@ -21,6 +21,7 @@ export class UserService {
     return this.http.post<LoginResponceI>('api/users/login', user).pipe(
       tap((res: LoginResponceI) => {
         console.log(res);
+        console.log(res.access_token);
         localStorage.setItem('nest', res.access_token);
       }),
       tap(() =>
