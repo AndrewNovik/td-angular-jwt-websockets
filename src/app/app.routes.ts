@@ -3,6 +3,7 @@ import { PublicComponent } from './public/public.component';
 import { PrivateComponent } from './private/private.component';
 import { LoginComponent } from './public/components/login/login.component';
 import { RegisterComponent } from './public/components/register/register.component';
+import { DashboardComponent } from './private/components/dashboard/dashboard.component';
 
 export const routes: Routes = [
   {
@@ -28,6 +29,17 @@ export const routes: Routes = [
   {
     path: 'private',
     component: PrivateComponent,
+    children: [
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+      },
+      {
+        path: '**',
+        redirectTo: '',
+        pathMatch: 'full',
+      },
+    ],
   },
 
   {

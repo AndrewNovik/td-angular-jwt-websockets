@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
 import { LoginResponceI, UserI } from '../public.interface';
 import { catchError, Observable, tap, throwError } from 'rxjs';
+import { LOCALSTORAGE_KEY } from '../../app.config';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 export const snackBarConfig: MatSnackBarConfig = {
   duration: 2500,
@@ -16,13 +18,13 @@ export const snackBarConfig: MatSnackBarConfig = {
 export class UserService {
   private readonly http: HttpClient = inject(HttpClient);
   private readonly snackbar: MatSnackBar = inject(MatSnackBar);
+  private readonly jwtService: JwtHelperService = inject(JwtHelperService);
 
   login(user: UserI): Observable<LoginResponceI> {
     return this.http.post<LoginResponceI>('api/users/login', user).pipe(
       tap((res: LoginResponceI) => {
         console.log(res);
-        console.log(res.access_token);
-        localStorage.setItem('nest', res.access_token);
+        localStorage.setItem(LOCALSTORAGE_KEY, res.access_token);
       }),
       tap(() =>
         this.snackbar.open('Login Successfull', 'Close', snackBarConfig)
@@ -52,5 +54,10 @@ export class UserService {
         return throwError(e);
       })
     );
+  }
+
+  getLoggedInUser() {
+    const decodedToken = this.jwtService.decodeToken();
+    return decodedToken.user;
   }
 }
