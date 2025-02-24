@@ -1,1 +1,19 @@
 <p>dashboard works!</p>
+<button (click)="getTodos()">get Todo</button>
+
+<div class="form">
+  <form [formGroup]="form" (ngSubmit)="addTodo()">
+    <input type="text" placeholder="title" formControlName="title" />
+    <input type="text" placeholder="content" formControlName="content" />
+    <input type="radio" formControlName="f_done" value="true" />
+    <button type="submit">ADd</button>
+  </form>
+</div>
+
+<ul *ngIf="todos$ | async as todos">
+  <li *ngFor="let todo of todos">
+    {{ todo.id }}
+    {{ todo.title }}
+    {{ todo.content }}
+  </li>
+</ul>
