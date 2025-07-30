@@ -18,25 +18,47 @@ import { Observable } from 'rxjs';
 export class DashboardComponent implements OnInit {
   private readonly todoService: TodoService = inject(TodoService);
 
-  todos$?: Observable<any>;
+  public todos$?: Observable<any>;
+  public form!: FormGroup;
 
-  form: FormGroup = new FormGroup({
-    title: new FormControl(null, [Validators.required, Validators.email]),
-    content: new FormControl(null, [Validators.required]),
-    f_done: new FormControl(null, [Validators.required]),
-  });
-
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    this.buildForm();
     this.todoService.getTodos();
     this.todoService.getAddedTodos();
     this.todos$ = this.todoService.todoItems$;
   }
 
-  getTodos() {
+  public getTodos(): void {
     this.todoService.getTodos();
   }
 
-  addTodo() {
-    this.todoService.saveTodo(this.form.getRawValue());
+  public addTodo(): void {
+    if (this.form.valid) {
+      this.todoService.saveTodo(this.form.getRawValue());
+      this.resetForm();
+    }
+  }
+
+  private resetForm(): void {
+    this.form.reset();
+    this.form.patchValue({
+      f_done: false
+    });
+  }
+
+  public buildForm(): void {
+    this.form = new FormGroup({
+      title: new FormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(100)
+      ]),
+      content: new FormControl('', [
+        Validators.required,
+        Validators.minLength(5),
+        Validators.maxLength(500)
+      ]),
+      f_done: new FormControl(false),
+    });
   }
 }

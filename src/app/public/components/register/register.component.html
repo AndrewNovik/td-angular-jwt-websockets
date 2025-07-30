@@ -10,89 +10,74 @@
       </mat-card-header>
 
       <mat-card-content>
-        <form [formGroup]="form" (ngSubmit)="register()">
-          <mat-form-field>
-            <input
-              type="email"
-              matInput
-              placeholder="Email"
-              formControlName="email"
-            />
-            <mat-error
-              *ngIf="
-                this.form.get('email')?.touched &&
-                this.form.get('email')?.hasError('required')
-              "
-              >Email is required</mat-error
-            >
-            <mat-error
-              *ngIf="
-                this.form.get('email')?.touched &&
-                this.form.get('email')?.hasError('email')
-              "
-              >Email must be valid</mat-error
-            >
-          </mat-form-field>
+        @if (form) {
+          <form [formGroup]="form" (ngSubmit)="register()">
+            <mat-form-field>
+              <input
+                type="email"
+                matInput
+                placeholder="Email"
+                formControlName="email"
+              />
+              @if (email().touched && email().hasError('required')) {
+                <mat-error>Email is required</mat-error>
+              }
+              @if (email().touched && email().hasError('email')) {
+                <mat-error>Email must be valid</mat-error>
+              }
+            </mat-form-field>
+  
+            <mat-form-field>
+              <input
+                type="text"
+                matInput
+                placeholder="Username"
+                formControlName="username"
+              />
+              @if (username().touched && username().hasError('required')) {
+                <mat-error>Username is required</mat-error>
+              }
+            </mat-form-field>
+  
+            <mat-form-field>
+              <input
+                type="password"
+                matInput
+                placeholder="Password"
+                formControlName="password"
+              />
+              @if (password().touched && password().hasError('required')) {
+                <mat-error>Password is required</mat-error>
+              }
+            </mat-form-field>
+  
+            <mat-form-field>
+              <input
+                type="password"
+                matInput
+                placeholder="Password Confirmation"
+                formControlName="passwordConfirm"
+              />
+              @if (passwordConfirm().touched && passwordConfirm().hasError('passwordsNotMatching')) {
+                <mat-error>Passwords are not matching</mat-error>
+              }
+            </mat-form-field>
 
-          <mat-form-field>
-            <input
-              type="text"
-              matInput
-              placeholder="Username"
-              formControlName="username"
-            />
-            <mat-error
-              *ngIf="
-                this.form.get('username')?.touched &&
-                this.form.get('username')?.hasError('required')
-              "
-              >Username is required</mat-error
-            >
-          </mat-form-field>
+            @if (!form.valid) {
+              <mat-hint>Please fill out all information correctly!</mat-hint>
+            }
 
-          <mat-form-field>
-            <input
-              type="password"
-              matInput
-              placeholder="Password"
-              formControlName="password"
-            />
-            <mat-error
-              *ngIf="
-                this.form.get('password')?.touched &&
-                this.form.get('password')?.hasError('required')
-              "
-              >Password is required</mat-error
-            >
-          </mat-form-field>
-
-          <mat-form-field>
-            <input
-              type="password"
-              matInput
-              placeholder="Password Cofnirmation"
-              formControlName="passwordConfirm"
-            />
-          </mat-form-field>
-
-          <mat-hint *ngIf="!form.valid"
-            >Please fill out all information correctly!</mat-hint
-          >
-
-          <mat-error
-            *ngIf="
-              this.form.get('passwordConfirm')?.touched &&
-              this.form.get('passwordConfirm')?.hasError('passwordsNotMatching')
-            "
-            >Passwords are not matching</mat-error
-          >
-
-          <div class="button">
-            <button mat-button type="submit" [disabled]="!form.valid">
-              Register
-            </button>
-          </div>
-        </form>
+            @if (passwordConfirm().touched && passwordConfirm().hasError('passwordsNotMatching')) {
+              <mat-error>Passwords are not matching</mat-error>
+            }
+  
+            <div class="button">
+              <button mat-button type="submit" [disabled]="!form.valid">
+                Register
+              </button>
+            </div>
+          </form>
+        }
       </mat-card-content>
     </mat-card>
   </div>

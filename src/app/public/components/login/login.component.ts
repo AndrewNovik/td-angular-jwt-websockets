@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import {
+  FormBuilder,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -14,6 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { CustomValidators } from '../../validators/custom-validators';
 
 @Component({
   imports: [
@@ -30,30 +32,32 @@ import { MatInputModule } from '@angular/material/input';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  form: FormGroup = new FormGroup({
-    email: new FormControl(null, [Validators.required, Validators.email]),
-    password: new FormControl(null, [Validators.required]),
-  });
+  private readonly userService: UserService = inject(UserService);
+  private readonly router: Router = inject(Router);
+  private readonly formBuilder: FormBuilder = inject(FormBuilder);
 
-  constructor(private userService: UserService, private router: Router) {}
+  public form!: FormGroup;
+  public readonly email = computed(() => this.form.get('email') as FormControl);
+  public readonly password = computed(() => this.form.get('password') as FormControl);
 
-  login() {
+  public ngOnInit(): void {
+    this.form = this.formBuilder.group({
+      email: new FormControl(null, [Validators.required, Validators.email]),
+      password: new FormControl(null, [Validators.required]),
+    }, {
+      validators: CustomValidators.passwordMatching
+    });
+  }
+
+  public login(): void {
     if (this.form.valid) {
       this.userService
         .login({
-          email: this.email.value,
-          password: this.password.value,
+          email: this.email().value,
+          password: this.password().value,
         })
         .pipe(tap(() => this.router.navigate(['../../private/dashboard'])))
         .subscribe();
     }
-  }
-
-  get email(): FormControl {
-    return this.form.get('email') as FormControl;
-  }
-
-  get password(): FormControl {
-    return this.form.get('password') as FormControl;
   }
 }

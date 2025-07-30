@@ -1,19 +1,92 @@
-<p>dashboard works!</p>
-<button (click)="getTodos()">get Todo</button>
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>📋 Task Board</h1>
+    <p>Управляйте своими задачами эффективно</p>
+  </header>
 
-<div class="form">
-  <form [formGroup]="form" (ngSubmit)="addTodo()">
-    <input type="text" placeholder="title" formControlName="title" />
-    <input type="text" placeholder="content" formControlName="content" />
-    <input type="radio" formControlName="f_done" value="true" />
-    <button type="submit">ADd</button>
-  </form>
+  <div class="add-task-section">
+    <h2>➕ Добавить новую задачу</h2>
+    @if (form) {
+      <form [formGroup]="form" (ngSubmit)="addTodo()" class="task-form">
+        <div class="form-row">
+          <div class="input-group">
+            <label for="title">Название задачи</label>
+            <input 
+              id="title"
+              type="text" 
+              placeholder="Введите название задачи..." 
+              formControlName="title"
+              class="form-input" 
+            />
+          </div>
+          <div class="input-group">
+            <label for="content">Описание</label>
+            <textarea 
+              id="content"
+              placeholder="Описание задачи..." 
+              formControlName="content"
+              class="form-textarea"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="f_done" class="form-checkbox" />
+            <span class="checkmark"></span>
+            Задача выполнена
+          </label>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid">
+            <span class="btn-icon">✨</span>
+            Добавить задачу
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+
+  <div class="tasks-section">
+    <div class="section-header">
+      <h2>📝 Мои задачи</h2>
+      <button (click)="getTodos()" class="btn-refresh">
+        <span class="btn-icon">🔄</span>
+        Обновить
+      </button>
+    </div>
+
+    @if (todos$ | async; as todos) {
+      @if (todos.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <h3>Пока нет задач</h3>
+          <p>Добавьте первую задачу, чтобы начать работу!</p>
+        </div>
+      } @else {
+        <div class="tasks-grid">
+          @for (todo of todos; track todo.id) {
+            <div class="task-card" [class.completed]="todo.f_done">
+              <div class="task-header">
+                <span class="task-id">#{{todo.id}}</span>
+                <span class="task-status" [class.done]="todo.f_done">
+                  {{todo.f_done ? '✅' : '⏳'}}
+                </span>
+              </div>
+              <h3 class="task-title">{{todo.title}}</h3>
+              <p class="task-content">{{todo.content}}</p>
+              <div class="task-footer">
+                <span class="task-label" [class.completed-label]="todo.f_done">
+                  {{todo.f_done ? 'Выполнено' : 'В процессе'}}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    } @else {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Загрузка задач...</p>
+      </div>
+    }
+  </div>
 </div>
-
-<ul *ngIf="todos$ | async as todos">
-  <li *ngFor="let todo of todos">
-    {{ todo.id }}
-    {{ todo.title }}
-    {{ todo.content }}
-  </li>
-</ul>

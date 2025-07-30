@@ -20,7 +20,7 @@ export class UserService {
   private readonly snackbar: MatSnackBar = inject(MatSnackBar);
   private readonly jwtService: JwtHelperService = inject(JwtHelperService);
 
-  login(user: UserI): Observable<LoginResponceI> {
+  public login(user: UserI): Observable<LoginResponceI> {
     return this.http.post<LoginResponceI>('api/users/login', user).pipe(
       tap((res: LoginResponceI) => {
         console.log(res);
@@ -36,7 +36,7 @@ export class UserService {
     );
   }
 
-  register(user: UserI): Observable<UserI> {
+  public register(user: UserI): Observable<UserI> {
     return this.http.post<UserI>('api/users', user).pipe(
       tap((createdUser: UserI) =>
         this.snackbar.open(
@@ -56,7 +56,7 @@ export class UserService {
     );
   }
 
-  getLoggedInUser() {
+  public getLoggedInUser() {
     const decodedToken = this.jwtService.decodeToken();
     return decodedToken.user;
   }

@@ -13,15 +13,15 @@ export type TodoItem = {
   providedIn: 'root',
 })
 export class TodoService {
-  socket: Socket = io('http://localhost:3000/todos', {
+  private readonly socket: Socket = io('http://localhost:3000/todos', {
     auth: {
       authorization: tokenGetter(),
     },
   });
-  todoItemsSubject = new BehaviorSubject<TodoItem[]>([]);
-  public todoItems$ = this.todoItemsSubject.asObservable();
+  private readonly todoItemsSubject = new BehaviorSubject<TodoItem[]>([]);
+  public readonly todoItems$ = this.todoItemsSubject.asObservable();
 
-  getTodos() {
+  public getTodos(): void {
     console.log('try get todos');
 
     this.socket.on('todos', (todos: TodoItem[]) => {
@@ -30,14 +30,14 @@ export class TodoService {
     });
   }
 
-  getAddedTodos() {
+  public getAddedTodos(): void {
     this.socket.on('addedTodo', (todos) => {
       console.log(todos);
       this.todoItemsSubject.next([...this.todoItemsSubject.value, todos]);
     });
   }
 
-  saveTodo(todoitem: any) {
+  public saveTodo(todoitem: any): void {
     console.log(todoitem);
     this.socket.emit('addTodo', todoitem);
   }

@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import {
+  FormBuilder,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -32,19 +33,30 @@ import { CommonModule } from '@angular/common';
 })
 export class RegisterComponent {
   private readonly userService: UserService = inject(UserService);
-  private router: Router = inject(Router);
+  private readonly router: Router = inject(Router);
+  private readonly formBuilder: FormBuilder = inject(FormBuilder);
 
-  form: FormGroup = new FormGroup(
-    {
+  public readonly email = computed(() => this.form.get('email') as FormControl);
+  public readonly username = computed(() => this.form.get('username') as FormControl);
+  public readonly password = computed(() => this.form.get('password') as FormControl);
+  public readonly passwordConfirm = computed(() => this.form.get('passwordConfirm') as FormControl);
+
+  public form!: FormGroup;
+
+  public ngOnInit(): void {
+    this.form = this.formBuilder.group({
       email: new FormControl(null, [Validators.required, Validators.email]),
       username: new FormControl(null, [Validators.required]),
       password: new FormControl(null, [Validators.required]),
       passwordConfirm: new FormControl(null, [Validators.required]),
     },
-    { validators: CustomValidators.passwordMatching }
+    {
+      validators: CustomValidators.passwordMatching,
+    }
   );
+  }
 
-  register() {
+  public register(): void {
     if (this.form.valid) {
       this.userService
         .register(this.form.getRawValue())

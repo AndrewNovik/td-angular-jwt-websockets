@@ -7,12 +7,7 @@ import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
-import {
-  HTTP_INTERCEPTORS,
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
-import { AppInterceptor } from './interseptors/app.interseptor';
+import { provideHttpClient } from '@angular/common/http';
 import { JwtModule } from '@auth0/angular-jwt';
 
 export const LOCALSTORAGE_KEY = 'nest';
