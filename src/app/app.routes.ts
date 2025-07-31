@@ -4,6 +4,7 @@ import { PrivateComponent } from './private/private.component';
 import { LoginComponent } from './public/components/login/login.component';
 import { RegisterComponent } from './public/components/register/register.component';
 import { DashboardComponent } from './private/components/dashboard/dashboard.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -29,6 +30,7 @@ export const routes: Routes = [
   {
     path: 'private',
     component: PrivateComponent,
+    canActivate: [AuthGuard], // Защищаем приватные маршруты
     children: [
       {
         path: 'dashboard',
@@ -36,7 +38,7 @@ export const routes: Routes = [
       },
       {
         path: '**',
-        redirectTo: '',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
     ],

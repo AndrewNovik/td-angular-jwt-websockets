@@ -1,36 +1,37 @@
 import {
-  HttpErrorResponse,
   HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
+  HttpHandlerFn,
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
-@Injectable()
-export class AppInterceptor implements HttpInterceptor {
-  constructor() {}
-
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    const authReq = req.clone({
-      headers: req.headers.set('authorization', ''),
-    });
-    return next.handle(authReq).pipe(
-      tap(
-        (event) => {
-          if (event instanceof HttpResponse) console.log('Server response');
-        },
-        (err) => {
-          if (err instanceof HttpErrorResponse) {
-            if (err.status == 401) console.log('Unauthorized');
-          }
+export function appInterceptor(
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> {
+  // Для работы с куками не нужно добавлять заголовки
+  // Браузер автоматически отправляет куки с запросами
+  // Просто передаем запрос как есть
+  return next(req).pipe(
+    tap({
+      next: (event) => {
+        if (event instanceof HttpResponse) {
+          console.log('Server response received');
+          // Можно добавить логику для обработки куки из ответа
+          handleCookiesFromResponse(event);
         }
-      )
-    );
-  }
+      },
+      error: (err) => {
+        // Ошибки обрабатываются в auth-error.interceptor
+        console.log('Request error:', err);
+      }
+    })
+  );
+}
+
+function handleCookiesFromResponse(response: HttpResponse<any>): void {
+  // Куки автоматически обрабатываются браузером
+  // Здесь можно добавить дополнительную логику если нужно
+  console.log('Cookies handled by browser');
 }

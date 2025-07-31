@@ -19,10 +19,10 @@
                 placeholder="Email"
                 formControlName="email"
               />
-              @if (email().touched && email().hasError('required')) {
+              @if (emailControl()?.touched && emailControl()?.hasError('required')) {
                 <mat-error>Email is required</mat-error>
               }
-              @if (email().touched && email().hasError('email')) {
+              @if (emailControl()?.touched && emailControl()?.hasError('email')) {
                 <mat-error>Email must be valid</mat-error>
               }
             </mat-form-field>
@@ -34,7 +34,7 @@
                 placeholder="Username"
                 formControlName="username"
               />
-              @if (username().touched && username().hasError('required')) {
+              @if (usernameControl()?.touched && usernameControl()?.hasError('required')) {
                 <mat-error>Username is required</mat-error>
               }
             </mat-form-field>
@@ -46,7 +46,7 @@
                 placeholder="Password"
                 formControlName="password"
               />
-              @if (password().touched && password().hasError('required')) {
+              @if (passwordControl()?.touched && passwordControl()?.hasError('required')) {
                 <mat-error>Password is required</mat-error>
               }
             </mat-form-field>
@@ -58,7 +58,7 @@
                 placeholder="Password Confirmation"
                 formControlName="passwordConfirm"
               />
-              @if (passwordConfirm().touched && passwordConfirm().hasError('passwordsNotMatching')) {
+              @if (passwordConfirmControl()?.touched && passwordConfirmControl()?.hasError('passwordsNotMatching')) {
                 <mat-error>Passwords are not matching</mat-error>
               }
             </mat-form-field>
@@ -67,7 +67,7 @@
               <mat-hint>Please fill out all information correctly!</mat-hint>
             }
 
-            @if (passwordConfirm().touched && passwordConfirm().hasError('passwordsNotMatching')) {
+            @if (passwordConfirmControl()?.touched && passwordConfirmControl()?.hasError('passwordsNotMatching')) {
               <mat-error>Passwords are not matching</mat-error>
             }
   

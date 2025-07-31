@@ -1,51 +1,74 @@
 <div class="container">
   <div>
     <div class="register">
-      <a [routerLink]="['../register']">Go to Register</a>
+      <a [routerLink]="['../register']">Перейти к регистрации</a>
     </div>
 
     <mat-card>
       <mat-card-header>
-        <mat-card-title>User Login</mat-card-title>
+        <mat-card-title>Вход в систему</mat-card-title>
       </mat-card-header>
 
       <mat-card-content>
         @if (form) {
           <form [formGroup]="form" (ngSubmit)="login()">
+            
+            <!-- Ошибки формы -->
+            @if (formErrorsSignal().length > 0) {
+              <div class="form-errors">
+                @for (error of formErrorsSignal(); track error) {
+                  <mat-error>{{ error }}</mat-error>
+                }
+              </div>
+            }
+
             <mat-form-field>
               <input
                 type="email"
                 matInput
                 placeholder="Email"
                 formControlName="email"
+                [class.ng-invalid]="isEmailInvalid()"
+                [class.ng-touched]="emailControl()?.touched"
+                [class.ng-valid]="FormUtils.isFieldValid(form, 'email')"
               />
-              <mat-error *ngIf="email().touched && email().hasError('required')"
-                >Email is required</mat-error
-              >
-              <mat-error *ngIf="email().touched && email().hasError('email')"
-                >Email must be valid</mat-error
-              >
+              @if (emailError()) {
+                <mat-error>{{ emailError() }}</mat-error>
+              }
             </mat-form-field>
   
             <mat-form-field>
               <input
                 type="password"
                 matInput
-                placeholder="Password"
+                placeholder="Пароль"
                 formControlName="password"
+                [class.ng-invalid]="isPasswordInvalid()"
+                [class.ng-touched]="passwordControl()?.touched"
+                [class.ng-valid]="FormUtils.isFieldValid(form, 'password')"
               />
-              <mat-error *ngIf="password().touched && password().hasError('required')"
-                >Password is required</mat-error
-              >
+              @if (passwordError()) {
+                <mat-error>{{ passwordError() }}</mat-error>
+              }
             </mat-form-field>
-  
-            <mat-hint *ngIf="!form.valid"
-              >Please fill out all information correctly!</mat-hint
-            >
+
+            @if (!FormHelper.isFormValid(form)) {
+              <mat-hint>Пожалуйста, заполните все поля корректно!</mat-hint>
+            }
   
             <div class="button">
-              <button mat-button type="submit" [disabled]="!form.valid">
-                Login
+              <button 
+                mat-raised-button 
+                color="primary" 
+                type="submit"
+                [disabled]="isSubmittingSignal() || !FormHelper.isFormValid(form)"
+              >
+                @if (isSubmittingSignal()) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                  Вход...
+                } @else {
+                  Войти
+                }
               </button>
             </div>
           </form>
