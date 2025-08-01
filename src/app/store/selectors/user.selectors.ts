@@ -12,7 +12,13 @@ export const selectUser = createSelector(
 
 export const selectIsAuthenticated = createSelector(
   selectUserState,
-  (state: UserState) => state.user?.isAuthenticated || false
+  (state: UserState) => {
+    const isAuthenticated = state.user?.isAuthenticated || false;
+    console.log('🔍 [SELECTOR] selectIsAuthenticated called, state:', state);
+    console.log('🔍 [SELECTOR] User from state:', state.user);
+    console.log('🔍 [SELECTOR] Is authenticated result:', isAuthenticated);
+    return isAuthenticated;
+  }
 );
 
 export const selectIsLoading = createSelector(

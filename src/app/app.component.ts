@@ -5,6 +5,7 @@ import { Store } from '@ngrx/store';
 import * as UserActions from './store/actions/user.actions';
 import { UserService } from './public/services/user.service';
 import { take } from 'rxjs/operators';
+import { CookieUtils } from './public/utils/cookie-utils';
 
 @Component({
   selector: 'app-root',
@@ -22,14 +23,16 @@ export class AppComponent implements OnInit {
   }
 
   private initializeStore(): void {
-    console.log('AppComponent: Initializing store...');
+    console.log('🚀 [APP] AppComponent: Initializing store...');
+    CookieUtils.logCookieInfo('On app init');
     
     // Проверяем, есть ли сохраненные данные пользователя в localStorage
     const savedUserState = localStorage.getItem('user_state');
     if (savedUserState) {
       try {
         const userState = JSON.parse(savedUserState);
-        console.log('AppComponent: Loading saved user state:', userState);
+        console.log('🚀 [APP] Loading saved user state:', userState);
+        console.log('🚀 [APP] User isAuthenticated from localStorage:', userState.isAuthenticated);
         
         // Устанавливаем сохраненное состояние пользователя
         this.store.dispatch(UserActions.setUserState({ userState }));
@@ -37,32 +40,34 @@ export class AppComponent implements OnInit {
         // Проверяем валидность токена через бекенд
         this.validateSavedUser();
       } catch (error) {
-        console.error('AppComponent: Error loading saved user state:', error);
+        console.error('🚀 [APP] Error loading saved user state:', error);
         localStorage.removeItem('user_state');
       }
     } else {
-      console.log('AppComponent: No saved user state found');
+      console.log('🚀 [APP] No saved user state found');
     }
 
     // Проверяем, есть ли сохраненный последний путь
     const savedLastPath = localStorage.getItem('last_path');
     if (savedLastPath) {
-      console.log('AppComponent: Loading saved last path:', savedLastPath);
+      console.log('🚀 [APP] Loading saved last path:', savedLastPath);
       this.store.dispatch(UserActions.saveLastPath({ path: savedLastPath }));
     } else {
-      console.log('AppComponent: No saved last path found, using default');
+      console.log('🚀 [APP] No saved last path found, using default');
     }
   }
 
   private validateSavedUser(): void {
-    console.log('AppComponent: Validating saved user...');
+    console.log('🚀 [APP] Validating saved user...');
+    CookieUtils.logCookieInfo('Before validation request');
     
     // Пытаемся получить профиль пользователя для проверки валидности токена
     this.userService.getProfile().pipe(
       take(1)
     ).subscribe({
       next: (response) => {
-        console.log('AppComponent: User validation successful:', response);
+        console.log('🚀 [APP] User validation successful:', response);
+        CookieUtils.logCookieInfo('After validation');
         
         if (response.success && response.data) {
           // Токен валиден, обновляем данные пользователя
@@ -70,15 +75,16 @@ export class AppComponent implements OnInit {
           
           // Перенаправляем в приватную часть
           this.store.dispatch(UserActions.saveLastPath({ path: '/private/dashboard' }));
-          console.log('AppComponent: Redirecting to private area');
+          console.log('🚀 [APP] Redirecting to private area');
         } else {
-          console.log('AppComponent: User validation failed - clearing state');
+          console.log('🚀 [APP] User validation failed - clearing state');
           this.clearInvalidUserState();
         }
       },
       error: (error) => {
-        console.error('AppComponent: User validation error:', error);
-        console.log('AppComponent: Clearing invalid user state');
+        console.error('🚀 [APP] User validation error:', error);
+        CookieUtils.logCookieInfo('After validation error');
+        console.log('🚀 [APP] Clearing invalid user state');
         this.clearInvalidUserState();
       }
     });

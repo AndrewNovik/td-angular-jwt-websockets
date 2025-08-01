@@ -10,28 +10,29 @@ export function appInterceptor(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ): Observable<HttpEvent<unknown>> {
-  // Для работы с куками не нужно добавлять заголовки
-  // Браузер автоматически отправляет куки с запросами
-  // Просто передаем запрос как есть
+  console.log('🌐 [INTERCEPTOR] Request URL:', req.url);
+  console.log('🌐 [INTERCEPTOR] Request headers:', req.headers.keys());
+  
   return next(req).pipe(
-    tap({
-      next: (event) => {
-        if (event instanceof HttpResponse) {
-          console.log('Server response received');
-          // Можно добавить логику для обработки куки из ответа
-          handleCookiesFromResponse(event);
+    tap((event) => {
+      if (event instanceof HttpResponse) {
+        console.log('🌐 [INTERCEPTOR] Server response received');
+        console.log('🌐 [INTERCEPTOR] Response status:', event.status);
+        console.log('🌐 [INTERCEPTOR] Response headers:', event.headers.keys());
+        
+        // Проверяем заголовки, связанные с куками
+        const setCookieHeader = event.headers.get('set-cookie');
+        if (setCookieHeader) {
+          console.log('🌐 [INTERCEPTOR] Set-Cookie header found:', setCookieHeader);
+        } else {
+          console.warn('🌐 [INTERCEPTOR] No Set-Cookie header in response!');
         }
-      },
-      error: (err) => {
-        // Ошибки обрабатываются в auth-error.interceptor
-        console.log('Request error:', err);
+        
+        const accessControlAllowCredentials = event.headers.get('access-control-allow-credentials');
+        console.log('🌐 [INTERCEPTOR] Access-Control-Allow-Credentials:', accessControlAllowCredentials);
+        
+        console.log('🌐 [INTERCEPTOR] Cookies handled by browser');
       }
     })
   );
-}
-
-function handleCookiesFromResponse(response: HttpResponse<any>): void {
-  // Куки автоматически обрабатываются браузером
-  // Здесь можно добавить дополнительную логику если нужно
-  console.log('Cookies handled by browser');
 }

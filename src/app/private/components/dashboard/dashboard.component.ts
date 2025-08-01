@@ -8,6 +8,8 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
+import { WebSocketDebug } from '../../utils/websocket-debug';
+import { TodoSystemSummary } from '../../utils/todo-summary';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,8 +25,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public isConnected = false;
 
   public ngOnInit(): void {
+    console.log('📊 [DASHBOARD] === DASHBOARD INITIALIZED ===');
+    
+    // Запускаем полную диагностику системы
+    TodoSystemSummary.runFullDiagnostic();
+    
     this.buildForm();
     this.initializeTodoService();
+    
+    console.log('📊 [DASHBOARD] === INITIALIZATION COMPLETE ===');
   }
 
   public ngOnDestroy(): void {
@@ -59,30 +68,58 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   public getTodos(): void {
+    console.log('📋 [DASHBOARD] === GET TODOS INITIATED ===');
+    console.log('📋 [DASHBOARD] WebSocket connected:', this.todoService.isConnected());
+    
     if (this.todoService.isConnected()) {
+      console.log('📋 [DASHBOARD] WebSocket connected, requesting todos...');
       this.todoService.getTodos();
     } else {
-      console.warn('WebSocket not connected, attempting to reconnect...');
+      console.warn('📋 [DASHBOARD] WebSocket not connected, attempting to reconnect...');
+      WebSocketDebug.diagnoseWebSocketState();
       this.todoService.reconnect();
       setTimeout(() => {
+        console.log('📋 [DASHBOARD] Checking connection after reconnect...');
         if (this.todoService.isConnected()) {
+          console.log('📋 [DASHBOARD] Reconnected successfully, requesting todos...');
           this.todoService.getTodos();
+        } else {
+          console.warn('📋 [DASHBOARD] Reconnection failed');
         }
       }, 1000);
     }
+    console.log('📋 [DASHBOARD] === GET TODOS END ===');
   }
 
   public addTodo(): void {
+    console.log('📝 [DASHBOARD] === ADD TODO INITIATED ===');
+    console.log('📝 [DASHBOARD] Form valid:', this.form.valid);
+    console.log('📝 [DASHBOARD] Form errors:', this.form.errors);
+    console.log('📝 [DASHBOARD] Form value:', this.form.getRawValue());
+    
     if (this.form.valid) {
       const todoData = this.form.getRawValue();
+      console.log('📝 [DASHBOARD] Todo data to be saved:', todoData);
       
       if (this.todoService.isConnected()) {
+        console.log('📝 [DASHBOARD] WebSocket connected, saving todo...');
         this.todoService.saveTodo(todoData);
         this.resetForm();
+        console.log('📝 [DASHBOARD] Form reset after save');
       } else {
-        console.warn('WebSocket not connected, cannot add todo');
+        console.warn('📝 [DASHBOARD] WebSocket not connected, cannot add todo');
+        WebSocketDebug.diagnoseWebSocketState();
       }
+    } else {
+      console.warn('📝 [DASHBOARD] Form is invalid, cannot save todo');
+      Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        if (control && control.errors) {
+          console.warn(`📝 [DASHBOARD] Field ${key} errors:`, control.errors);
+        }
+      });
     }
+    console.log('📝 [DASHBOARD] === ADD TODO END ===');
   }
 
   public updateTodo(todo: TodoItem): void {

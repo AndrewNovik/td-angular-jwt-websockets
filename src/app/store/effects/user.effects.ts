@@ -9,6 +9,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import * as UserActions from '../actions/user.actions';
 import { UserService } from '../../public/services/user.service';
 import { UserState } from '../reducers/user.reducer';
+import { CookieUtils } from '../../public/utils/cookie-utils';
+import { AuthDebug } from '../../public/utils/auth-debug';
 
 @Injectable()
 export class UserEffects {
@@ -23,16 +25,19 @@ export class UserEffects {
     this.actions$.pipe(
       ofType(UserActions.login),
       tap(({ credentials }) => {
-        console.log('Login effect triggered with credentials:', credentials);
+        console.log('🔐 [EFFECTS] Login effect triggered with credentials:', credentials);
+        CookieUtils.logCookieInfo('Before login effect');
       }),
       mergeMap(({ credentials }) =>
         this.userService.login(credentials).pipe(
           tap(response => {
-            console.log('Login service response:', response);
+            console.log('🔐 [EFFECTS] Login service response:', response);
+            CookieUtils.logCookieInfo('After login service response');
           }),
           map(response => UserActions.loginSuccess({ response })),
           catchError(error => {
-            console.error('Login effect error:', error);
+            console.error('🔐 [EFFECTS] Login effect error:', error);
+            CookieUtils.logCookieInfo('After login effect error');
             const errorMessage = error.error?.message || 'Login failed';
             return of(UserActions.loginFailure({ error: errorMessage }));
           })
@@ -46,7 +51,14 @@ export class UserEffects {
     this.actions$.pipe(
       ofType(UserActions.loginSuccess),
       tap(({ response }) => {
-        console.log('Login Success Effect triggered:', response);
+        console.log('✅ [EFFECTS] Login Success Effect triggered:', response);
+        CookieUtils.logCookieInfo('After login success effect');
+        console.log('✅ [EFFECTS] Current URL before navigation:', this.router.url);
+        
+        // Запускаем диагностику
+        AuthDebug.diagnoseAuthState();
+        AuthDebug.checkCorsIssues();
+        AuthDebug.getRecommendations();
       }),
       switchMap(({ response }) => {
         if (response.success) {
@@ -54,18 +66,24 @@ export class UserEffects {
           return this.store.select(state => state.user.lastPath).pipe(
             take(1),
             tap(lastPath => {
-              console.log('Last path from store:', lastPath);
+              console.log('✅ [EFFECTS] Last path from store:', lastPath);
               
-              // Если lastPath равен дефолтному значению или это путь логина/регистрации,
-              // то перенаправляем на dashboard
-              if (lastPath === '/private/dashboard' || 
-                  lastPath === '/public/login' || 
-                  lastPath === '/public/register' ||
-                  lastPath === '/public') {
-                console.log('Navigating to dashboard');
+              // Проверяем, нужно ли перенаправить на dashboard
+              const shouldRedirectToDashboard = 
+                !lastPath || 
+                lastPath === '/' ||
+                lastPath === '/private/dashboard' || 
+                lastPath === '/public/login' || 
+                lastPath === '/public/register' ||
+                lastPath === '/public' ||
+                !lastPath.startsWith('/private');
+              
+              if (shouldRedirectToDashboard) {
+                console.log('✅ [EFFECTS] Redirecting to dashboard (reason: invalid or public path)');
+                console.log('✅ [EFFECTS] Last path was:', lastPath);
                 this.router.navigate(['/private/dashboard']);
               } else {
-                console.log('Navigating to saved path:', lastPath);
+                console.log('✅ [EFFECTS] Navigating to saved private path:', lastPath);
                 this.router.navigate([lastPath]);
               }
             }),
@@ -143,14 +161,21 @@ export class UserEffects {
     this.actions$.pipe(
       ofType(UserActions.loadProfileSuccess),
       tap(({ response }) => {
-        console.log('Load Profile Success Effect triggered:', response);
+        console.log('✅ [EFFECTS] Load Profile Success Effect triggered:', response);
+        console.log('✅ [EFFECTS] Current URL:', window.location.pathname);
+        CookieUtils.logCookieInfo('After profile load success');
+        
         if (response.success && response.data) {
           // Если это валидация при запуске приложения, перенаправляем в приватную часть
           const currentUrl = window.location.pathname;
           if (currentUrl === '/' || currentUrl === '/public' || currentUrl === '/public/login' || currentUrl === '/public/register') {
-            console.log('Auto-navigating to private area after profile validation');
+            console.log('✅ [EFFECTS] Auto-navigating to private area after profile validation');
             this.router.navigate(['/private/dashboard']);
+          } else {
+            console.log('✅ [EFFECTS] Already in private area, no navigation needed');
           }
+        } else {
+          console.log('✅ [EFFECTS] Profile validation failed, no navigation');
         }
       }),
       map(() => ({ type: '[User] Load Profile Success Navigation' }))

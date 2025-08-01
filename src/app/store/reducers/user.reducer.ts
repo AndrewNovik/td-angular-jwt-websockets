@@ -27,7 +27,8 @@ export const userReducer = createReducer(
   })),
 
   on(UserActions.loginSuccess, (state, { response }) => {
-    console.log('Login Success Response:', response);
+    console.log('🔄 [REDUCER] Login Success Response:', response);
+    console.log('🔄 [REDUCER] Current state before update:', state);
     
     if (response.success && response.data?.user) {
       const userState: UserStateI = {
@@ -40,20 +41,24 @@ export const userReducer = createReducer(
         preferences: getUserPreferences()
       };
 
-      console.log('Saving user state to store:', userState);
+      console.log('🔄 [REDUCER] Created user state:', userState);
+      console.log('🔄 [REDUCER] Saving user state to localStorage');
 
       // Сохраняем в localStorage
       saveUserStateToStorage(userState);
 
-      return {
+      const newState = {
         ...state,
         user: userState,
         isLoading: false,
         error: null
       };
+      
+      console.log('🔄 [REDUCER] New state after login success:', newState);
+      return newState;
     }
     
-    console.log('Login failed - no user data in response');
+    console.log('🔄 [REDUCER] Login failed - no user data in response');
     return {
       ...state,
       isLoading: false,

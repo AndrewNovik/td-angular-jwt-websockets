@@ -4,6 +4,7 @@ import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
 import { LoginResponseI, UserI, ApiResponseI, LoginCredentialsI } from '../public.interface';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { CookieUtils } from '../utils/cookie-utils';
 
 export const snackBarConfig: MatSnackBarConfig = {
   duration: 2500,
@@ -20,12 +21,23 @@ export class UserService {
   private readonly jwtService: JwtHelperService = inject(JwtHelperService);
 
   public login(credentials: LoginCredentialsI): Observable<LoginResponseI> {
-    console.log(credentials);
+    console.log('🌐 [SERVICE] Login request with credentials:', credentials);
+    CookieUtils.logCookieInfo('Before login request');
+    
     return this.http.post<LoginResponseI>('api/users/login', credentials).pipe(
       tap((response: LoginResponseI) => {
-        console.log('Login response:', response);
+        console.log('🌐 [SERVICE] Login response received:', response);
+        CookieUtils.logCookieInfo('After login response');
+        
+        if (response.success && response.data?.user) {
+          console.log('🌐 [SERVICE] Login successful, user data:', response.data.user);
+        } else {
+          console.warn('🌐 [SERVICE] Login response missing user data');
+        }
       }),
       catchError((e) => {
+        console.error('🌐 [SERVICE] Login request failed:', e);
+        CookieUtils.logCookieInfo('After login error');
         const errorMessage = e.error?.message || 'Ошибка входа';
         this.snackbar.open(errorMessage, 'Закрыть', snackBarConfig);
         return throwError(() => e);
@@ -99,14 +111,23 @@ export class UserService {
   }
 
   public getProfile(): Observable<ApiResponseI<UserI>> {
+    console.log('🌐 [SERVICE] GetProfile request initiated');
+    CookieUtils.logCookieInfo('Before getProfile request');
+    
     return this.http.get<ApiResponseI<UserI>>('api/users/profile').pipe(
       tap((response: ApiResponseI<UserI>) => {
+        console.log('🌐 [SERVICE] GetProfile response received:', response);
+        CookieUtils.logCookieInfo('After getProfile response');
+        
         if (response.success && response.data) {
-          console.log('Profile loaded:', response.data);
+          console.log('🌐 [SERVICE] Profile loaded successfully:', response.data);
+        } else {
+          console.warn('🌐 [SERVICE] GetProfile response missing user data');
         }
       }),
       catchError((e) => {
-        console.error('Get profile error:', e);
+        console.error('🌐 [SERVICE] GetProfile request failed:', e);
+        CookieUtils.logCookieInfo('After getProfile error');
         return throwError(() => e);
       })
     );
